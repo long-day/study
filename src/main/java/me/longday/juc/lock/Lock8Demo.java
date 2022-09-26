@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author 君
  * @version 1.0
- * @desc TODO
+ * @desc Lock的8个示例
  * @date 2022/9/26
  */
 
