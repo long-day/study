@@ -5,11 +5,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author 君
  * @version 1.0
- * @desc TODO
+ * @desc 死锁和查询死锁
  * @date 2022/9/26
- */
 
-/**
  * 排查死锁方式:
  * 1. jps -l 查看JVM现在正在运行的程序 ==> jstack [进程号] 追踪线程,如果有死锁会输出
  * 2. jconsole Java控制台. ==> 连接运行的线程 ==>找到进程页面 ==> 查找死锁  即可查询是否有死锁
