@@ -8,7 +8,7 @@ package me.longday.juc.lock;
  */
 public class LockSyncDemo {
     public static void main(String[] args) {
-
+        System.out.println("hello");
     }
 }
 
