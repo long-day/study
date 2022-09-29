@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicStampedReference;
 
 /**
  * @author 君
@@ -17,18 +18,50 @@ import java.util.concurrent.atomic.AtomicReference;
  *  在硬件层面实现类似锁的机制 ==> CPU 锁。使用的是汇编 --> cmpxchg()方法
  *
  *  缺点:
- *      1. x循环时间长，开销大
- *      2. ABA问题(也称:老王拜访问题 → . →)
+ *      1. x循环时间长，开销大  ==> 解决方案,无法解决....
+ *      2. ABA问题(也称:老王拜访问题 → . →) ==>解决方案: 增加修订版本号。
  *
  */
 public class CasDemo {
 
     public static void main(String[] args) {
-        // 原子类泛型
-        customType();
-        System.out.println("---------------");
-        // 自定义自旋锁
-        spinLock();
+        //想更换运行结果切换这里的值
+        int choice = 3;
+        switch (choice) {
+            case 1 -> // 原子类泛型
+                    customType();
+            case 2 -> // 自定义自旋锁
+                    spinLock();
+            case 3 -> // ABA问题解决方案
+                    abaIssue();
+            default -> System.out.println("请输入合法数字");
+        }
+    }
+
+    private static void abaIssue() {
+        User root = new User("root", 1);
+        AtomicStampedReference<User> userAtoStaReference = new AtomicStampedReference<>(root, 1);
+
+        new Thread(()->{
+            int stamp = userAtoStaReference.getStamp();
+            System.out.println(Thread.currentThread().getName()+"\t首次版本号:"+stamp);
+            try { TimeUnit.SECONDS.sleep(1);} catch (InterruptedException e) {e.printStackTrace();}
+            User user = new User("宝宝", 2);
+            userAtoStaReference.compareAndSet(root,user,stamp,stamp+1);
+
+            System.out.println(Thread.currentThread().getName()+"\t二次版本号:"+userAtoStaReference.getStamp());
+            userAtoStaReference.compareAndSet(user,root, userAtoStaReference.getStamp(), userAtoStaReference.getStamp()+1);
+
+            System.out.println(Thread.currentThread().getName()+"\t三次版本号:"+userAtoStaReference.getStamp());
+        },"A线程").start();
+        new Thread(()->{
+            int stamp = userAtoStaReference.getStamp();
+            System.out.println(Thread.currentThread().getName()+"\t首次版本号:"+stamp);
+
+            try { TimeUnit.SECONDS.sleep(3);} catch (InterruptedException e) {e.printStackTrace();}
+            boolean result = userAtoStaReference.compareAndSet(root, new User("test", 2), stamp, stamp + 1);
+            System.out.println(Thread.currentThread().getName()+" 是否修改成功: "+result+"\t现存变量信息(想更改为User(name=test, id=2)): "+userAtoStaReference.getReference()+"\t当前版本号: "+userAtoStaReference.getStamp());
+        },"B线程").start();
     }
 
     private static void spinLock() {
