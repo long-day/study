@@ -8,11 +8,15 @@ import java.time.format.DateTimeFormatter;
 /**
  * @author 君
  * @version 1.0
- * @desc TODO
+ * @desc Temp
  * @date 2022/9/22
  */
 public class Temp {
     public static void main(String[] args) throws InterruptedException {
+        dateAndCalendarReplace();
+    }
+
+    private static void dateAndCalendarReplace() {
         //Data ==> Instant
         Instant now = Instant.now();
         System.out.println(now);
